@@ -23,15 +23,9 @@ A [Terraform module][module] to manage a collection of SSH public keys in [Hetzn
 module "ssh_keys" {
   source = "terraform-hetzner-modules/ssh-key/hetzner"
 
-  labels = { managed_by = "terraform" }
   keys = {
-    administrator = {
+    laptop = {
       public_key = file(pathexpand("~/.ssh/id_ed25519.pub"))
-    }
-    automation = {
-      name       = "ci-deploy"
-      public_key = var.automation_public_key
-      labels     = { purpose = "deployment" }
     }
   }
 }
