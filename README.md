@@ -1,23 +1,11 @@
-<p align="center">
-    <!-- terraform-hetzner-ssh-key -->
-<img src="https://cdn.simpleicons.org/terraform/844FBA" alt="Terraform Logo" align="center" width="128">
-<img src="https://avatars.githubusercontent.com/u/30047064?s=200&v=4" alt="Hetzner Logo" align="center" width="128">
-    <h1 align="center">Hetzner Cloud</h1>
-    <h2 align="center"><code>ssh-key</code></h2>
-</p>
+# Hetzner SSH Key Terraform module
 
-[![License](https://img.shields.io/github/license/terraform-hetzner-modules/terraform-hetzner-ssh-key?label=License)](https://opensource.org/licenses/MIT)
-[![Terraform](https://img.shields.io/badge/Terraform-_>=_1.7-brightgreen?logo=terraform&logoColor=623CE4)][terraform]
-[![Opentofu](https://img.shields.io/badge/OpenTofu-_>=_1.8-brightgreen?logo=opentofu)][opentofu]
-[![CI Status](https://github.com/terraform-hetzner-modules/terraform-hetzner-ssh-key/actions/workflows/testing.yaml/badge.svg)](https://github.com/terraform-hetzner-modules/terraform-hetzner-ssh-key/blob/main/.github/workflows/testing.yaml)
-[![GitHub Release](https://img.shields.io/github/v/release/terraform-hetzner-modules/terraform-hetzner-ssh-key?label=Release)][github_releases]
-[![GitHub Activity](https://img.shields.io/github/commit-activity/m/terraform-hetzner-modules/terraform-hetzner-ssh-key?label=Commits)][github_commits]
-[![Renovate](https://img.shields.io/badge/Renovate-enabled-brightgreen?logo=renovate&logoColor=1A1F6C)][renovate]
-[![Pre-Commit](https://img.shields.io/badge/PreCommit-enabled-brightgreen?logo=precommit&logoColor=FAB040)][pre-commit]
+Manage any number of SSH public keys with shared labels and per-key names and labels.
 
-A [Terraform module][module] to manage a collection of SSH public keys in [Hetzner Cloud][hetzner].
+## Usage
 
-## ✨ TL;DR
+Copy this configuration into `main.tf` and add the
+[provider configuration](#provider-configuration) below in `versions.tf`.
 
 ```hcl
 module "ssh_keys" {
@@ -30,6 +18,36 @@ module "ssh_keys" {
   }
 }
 ```
+
+The public key file must already exist. Reference `module.ssh_keys.ids.laptop` when creating servers.
+This module registers public keys; it does not generate key pairs.
+
+## Provider configuration
+
+Export your Hetzner API token as `HCLOUD_TOKEN`. Put the following in your calling root's `versions.tf`:
+
+```hcl
+terraform {
+  required_version = ">= 1.7"
+  required_providers {
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "~> 1.70"
+    }
+  }
+}
+
+provider "hcloud" {}
+```
+
+With both files in place, run `terraform init`, `terraform plan`, and `terraform apply`.
+Credentials and provider configuration belong in the calling root.
+Terraform >= 1.7 and OpenTofu >= 1.8 are supported.
+
+## Examples
+
+- [Basic](examples/basic): multiple public keys.
+- [Full](examples/full): every input, generated names, and shared and per-key labels.
 
 ## Managing keys
 
@@ -46,83 +64,56 @@ Private keys are neither generated nor accepted by this module.
 Changing a public key replaces its registered key. Registering or updating a key does not update
 SSH access on existing servers; injected server keys are configured when the server is created.
 
-## Compatibility and examples
-
-Requires Terraform >= 1.7 (OpenTofu >= 1.8 tested) and hcloud ~> 1.70.
-See [basic](examples/basic) and [full](examples/full) examples; configure credentials through `HCLOUD_TOKEN`.
-The generated [schema report](docs/SCHEMA.md) records provider fields and module mappings.
-See the [maintenance and upgrade guide](docs/UPGRADING.md) for validation and coverage checks.
-Run `terraform init -backend=false`, `terraform validate`, and `terraform test`
-for credential-free validation and mocked tests.
-
 <!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+| ---- | ------- |
+| terraform | >= 1.7 |
+| hcloud | ~> 1.70 |
+
 ## Providers
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | ~> 1.70 |
+| hcloud | ~> 1.70 |
 
-## Modules
+## Resources
 
-No modules.
+| Name | Type |
+| ---- | ---- |
+| [hcloud_ssh_key.current](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/ssh_key) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_keys"></a> [keys](#input\_keys) | SSH public keys keyed by stable identifiers. Names default to map keys; per-key labels override shared labels. | ```map(object({ name = optional(string) public_key = string labels = optional(map(string), {}) }))``` | `{}` | no |
-| <a name="input_labels"></a> [labels](#input\_labels) | Labels shared by all SSH keys. Per-key labels take precedence. | `map(string)` | `{}` | no |
+| keys | SSH public keys keyed by stable identifiers. Names default to map keys; per-key labels override shared labels. | ```map(object({ name = optional(string) public_key = string labels = optional(map(string), {}) }))``` | `{}` | no |
+| labels | Labels shared by all SSH keys. Per-key labels take precedence. | `map(string)` | `{}` | no |
 
 ## Outputs
 
 | Name | Description |
 | ---- | ----------- |
-| <a name="output_fingerprints"></a> [fingerprints](#output\_fingerprints) | SSH public key fingerprints indexed by the caller's stable keys. |
-| <a name="output_ids"></a> [ids](#output\_ids) | SSH key IDs indexed by the caller's stable keys. |
-| <a name="output_keys"></a> [keys](#output\_keys) | Complete SSH key attributes indexed by the caller's stable keys. |
-| <a name="output_labels"></a> [labels](#output\_labels) | Merged labels indexed by the caller's stable keys. |
-| <a name="output_names"></a> [names](#output\_names) | SSH key names indexed by the caller's stable keys. |
-| <a name="output_public_keys"></a> [public\_keys](#output\_public\_keys) | SSH public keys indexed by the caller's stable keys. |
+| fingerprints | SSH public key fingerprints indexed by the caller's stable keys. |
+| ids | SSH key IDs indexed by the caller's stable keys. |
+| keys | Complete SSH key attributes indexed by the caller's stable keys. |
+| labels | Merged labels indexed by the caller's stable keys. |
+| names | SSH key names indexed by the caller's stable keys. |
+| public\_keys | SSH public keys indexed by the caller's stable keys. |
 <!-- END_TF_DOCS -->
 
-### 🔃 Contributing
+## Contributing
 
-Refer to our [documentation for contributors][contributing] for contributing guidelines, commit message
-formats and versioning tips.
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for local checks and contribution guidelines, and
+[UPGRADING.md](docs/UPGRADING.md) for compatibility and live acceptance checks. The generated
+[schema report](docs/SCHEMA.md) documents provider coverage and intentional omissions.
 
-### 📥 Maintainers
+## Authors
 
-This project is owned and maintained by [Terraform Hetzner Modules][org]. Refer to the [`AUTHORS`][authors] or [`CODEOWNERS`][owners]
-for more information. You may also use the linked contact details to reach out directly.
+Maintained by [Terraform Hetzner Modules](https://github.com/terraform-hetzner-modules).
+See [AUTHORS](.github/AUTHORS) and [CODEOWNERS](.github/CODEOWNERS).
 
-### ©️ Copyright
+## License
 
-- _Assets provided by:_ **[HashiCorp][hashicorp]**
-- _Sources provided by:_ **[Terraform Hetzner Modules][org]** under the **[MIT License][license]**
-
-<!-- INTERNAL REFERENCES -->
-
-<!-- Project references -->
-
-<!-- File references -->
-
-[license]: LICENSE
-[contributing]: docs/CONTRIBUTING.md
-[authors]: .github/AUTHORS
-[owners]: .github/CODEOWNERS
-
-<!-- General links -->
-
-[org]: https://github.com/terraform-hetzner-modules
-[terraform]: https://terraform.io
-[opentofu]: https://opentofu.org/
-[hashicorp]: https://www.hashicorp.com/
-[hetzner]: https://hetzner.com
-[github_releases]: https://github.com/terraform-hetzner-modules/terraform-hetzner-ssh-key/releases
-[github_commits]: https://github.com/terraform-hetzner-modules/terraform-hetzner-ssh-key/commits/main/
-
-<!-- Third-party -->
-
-[module]: https://registry.terraform.io/modules/terraform-hetzner-modules/ssh-key/hetzner/latest
-[renovate]: https://renovatebot.com/
-[pre-commit]: https://pre-commit.com/
+MIT. See [LICENSE](LICENSE).
