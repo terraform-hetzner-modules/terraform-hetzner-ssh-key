@@ -4,8 +4,7 @@ Manage any number of SSH public keys with shared labels and per-key names and la
 
 ## Usage
 
-Copy this configuration into `main.tf` and add the
-[provider configuration](#provider-configuration) below in `versions.tf`.
+Copy this configuration into `main.tf`.
 
 ```hcl
 module "ssh_keys" {
@@ -21,28 +20,6 @@ module "ssh_keys" {
 
 The public key file must already exist. Reference `module.ssh_keys.ids.laptop` when creating servers.
 This module registers public keys; it does not generate key pairs.
-
-## Provider configuration
-
-Export your Hetzner API token as `HCLOUD_TOKEN`. Put the following in your calling root's `versions.tf`:
-
-```hcl
-terraform {
-  required_version = ">= 1.7"
-  required_providers {
-    hcloud = {
-      source  = "hetznercloud/hcloud"
-      version = "~> 1.70"
-    }
-  }
-}
-
-provider "hcloud" {}
-```
-
-With both files in place, run `terraform init`, `terraform plan`, and `terraform apply`.
-Credentials and provider configuration belong in the calling root.
-Terraform >= 1.7 and OpenTofu >= 1.8 are supported.
 
 ## Examples
 
